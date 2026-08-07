@@ -202,8 +202,14 @@ function buildSplitRows(){
     `;
     wrap.appendChild(row);
     row.querySelector(`#split-range-${s.key}`).addEventListener('input', e => {
-      splitPct[s.key] = parseInt(e.target.value,10);
-      el(`split-pct-${s.key}`).textContent = splitPct[s.key] + '%';
+      let val = parseInt(e.target.value,10) || 0;
+      const othersSum = STATS.reduce((a,st) => st.key === s.key ? a : a + splitPct[st.key], 0);
+      const maxAllowed = Math.max(0, 100 - othersSum);
+      if (val > maxAllowed) val = maxAllowed;
+      if (val < 0) val = 0;
+      splitPct[s.key] = val;
+      e.target.value = val;
+      el(`split-pct-${s.key}`).textContent = val + '%';
       updateSplitTotal();
     });
   });

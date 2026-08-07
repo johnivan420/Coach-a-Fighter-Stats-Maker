@@ -498,4 +498,94 @@
     height:5px; border-radius:3px;
     background:var(--line);
   }
-  .split-row input[type=range]::-webkit-sl
+  .split-row input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:16px; height:16px; border-radius:50%;
+    background:var(--cyan); border:2px solid var(--bg); cursor:pointer;
+  }
+  .split-row .spct{
+    font-family:'JetBrains Mono', monospace;
+    font-size:14px;
+    text-align:right;
+  }
+  .split-total-row{
+    display:flex; justify-content:space-between;
+    padding-top:10px; margin-top:4px; border-top:1px solid var(--line);
+    font-family:'JetBrains Mono', monospace; font-size:14px;
+  }
+  .split-total-row .v.ok{color:var(--good);}
+  .split-total-row .v.bad{color:var(--bad);}
+
+  /* ===== PREDICT ROW (button + results side by side) ===== */
+  .predict-row{
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+    margin-top:18px;
+    flex-wrap:wrap;
+  }
+  .predict-btn{
+    width:auto;
+    flex:0 0 auto;
+    padding:14px 22px;
+    margin-top:0;
+    white-space:nowrap;
+  }
+  .predict-results{
+    flex:1 1 260px;
+    min-width:220px;
+  }
+  @media (max-width:600px){
+    .predict-row{flex-direction:column;}
+    .predict-btn{width:100%;}
+  }
+
+  /* ===== PREDICTION RESULTS ===== */
+  .result-summary{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .rs-card{
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px;
+    text-align:center;
+  }
+  .rs-card .v{font-family:'Anton', sans-serif; font-size:26px; color:var(--cyan);}
+  .rs-card .l{font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-top:2px;}
+
+  .final-stat-row{
+    display:grid;
+    grid-template-columns:90px 1fr 90px;
+    align-items:center;
+    gap:8px;
+    padding:9px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .final-stat-row:last-child{border-bottom:none;}
+  .final-stat-row .fname{font-family:'Oswald',sans-serif; font-weight:600; font-size:14px; text-transform:uppercase;}
+  .growth-track{
+    height:9px;
+    background:var(--bg);
+    border-radius:5px;
+    overflow:hidden;
+    position:relative;
+    border:1px solid var(--line);
+  }
+  .growth-current{
+    position:absolute; left:0; top:0; bottom:0;
+    background:var(--cyan-dim);
+  }
+  .growth-gain{
+    position:absolute; top:0; bottom:0;
+    background:var(--orange);
+  }
+  .final-stat-row .fval{
+    font-family:'JetBrains Mono', monospace;
+    font-size:14px;
+    text-align:right;
+  }
+  .final-stat-row .fval .gain{color:var(--orange); font-weight:700;}

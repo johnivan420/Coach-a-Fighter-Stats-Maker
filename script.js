@@ -3,7 +3,7 @@ const TRAININGS_PER_OVR = 10; // every 10 trainings = +1 OVR
 const MAX_STAT = 3000;
 
 // Internal training rate per stat (points gained per 10 trainings).
-// Not shown in the UI anymore, but still drives the prediction math.
+// Not shown in the UI, but still drives the prediction math.
 const trainingRates = {dexterity:30, agility:30, stamina:30, endurance:30, power:30};
 /* ============================================ */
 
@@ -16,7 +16,7 @@ const STATS = [
 ];
 const statByKey = key => STATS.find(s => s.key === key);
 
-let currentStats = {dexterity:500, agility:500, stamina:500, endurance:500, power:500};
+let currentStats = {dexterity:0, agility:0, stamina:0, endurance:0, power:0};
 let caps = {dexterity:null, agility:null, stamina:null, endurance:null, power:null};
 let history = [];
 let historyCounter = 0;
@@ -29,6 +29,7 @@ const el = id => document.getElementById(id);
 /* ---------- stat inputs ---------- */
 function buildStatInputRows(){
   const wrap = el('statInputRows');
+  if (!wrap){ console.error('[Fighter Calc] Missing element with id="statInputRows" in index.html'); return; }
   wrap.innerHTML = '';
   STATS.forEach(s => {
     const row = document.createElement('div');
@@ -57,35 +58,42 @@ function buildStatInputRows(){
 
 /* ---------- hero / OVR progress ---------- */
 function requiredOvrIncrease(){
-  const cur = parseInt(el('currentOvrInput').value,10) || 0;
-  const max = parseInt(el('maxOvrInput').value,10) || 0;
+  const curEl = el('currentOvrInput');
+  const maxEl = el('maxOvrInput');
+  if (!curEl || !maxEl) return 0;
+  const cur = parseInt(curEl.value,10) || 0;
+  const max = parseInt(maxEl.value,10) || 0;
   return Math.max(0, max - cur);
 }
 function totalTrainingsNeeded(){ return requiredOvrIncrease() * TRAININGS_PER_OVR; }
 function totalBlocksNeeded(){ return requiredOvrIncrease(); } // 1 block = 10 trainings
 
 function updateHero(){
-  const cur = parseInt(el('currentOvrInput').value,10) || 0;
-  const max = parseInt(el('maxOvrInput').value,10) || 0;
+  const curEl = el('currentOvrInput');
+  const maxEl = el('maxOvrInput');
+  if (!curEl || !maxEl){ console.error('[Fighter Calc] Missing currentOvrInput or maxOvrInput in index.html'); return; }
+  const cur = parseInt(curEl.value,10) || 0;
+  const max = parseInt(maxEl.value,10) || 0;
   const inc = requiredOvrIncrease();
   const trainings = totalTrainingsNeeded();
 
-  el('ovrIncreaseVal').textContent = inc;
-  el('trainingsNeededVal').textContent = trainings;
-  el('blocksNeededVal').textContent = inc;
-  el('xpLeftLabel').textContent = `OVR ${cur}`;
-  el('xpRightLabel').textContent = `OVR ${max}`;
+  if (el('ovrIncreaseVal')) el('ovrIncreaseVal').textContent = inc;
+  if (el('trainingsNeededVal')) el('trainingsNeededVal').textContent = trainings;
+  if (el('blocksNeededVal')) el('blocksNeededVal').textContent = inc;
+  if (el('xpLeftLabel')) el('xpLeftLabel').textContent = `OVR ${cur}`;
+  if (el('xpRightLabel')) el('xpRightLabel').textContent = `OVR ${max}`;
 
   const span = max - cur;
-  el('xpFill').style.width = (span > 0 ? 0 : 100) + '%';
+  if (el('xpFill')) el('xpFill').style.width = (span > 0 ? 0 : 100) + '%';
 }
-el('currentOvrInput').addEventListener('input', updateHero);
-el('maxOvrInput').addEventListener('input', updateHero);
+if (el('currentOvrInput')) el('currentOvrInput').addEventListener('input', updateHero);
+if (el('maxOvrInput')) el('maxOvrInput').addEventListener('input', updateHero);
 
 /* ---------- compare builds ---------- */
 function populateBuildSelectors(){
   const selA = el('buildASelect');
   const selB = el('buildBSelect');
+  if (!selA || !selB){ console.error('[Fighter Calc] Missing buildASelect or buildBSelect in index.html'); return; }
   if (history.length === 0){
     selA.innerHTML = '<option value="">No builds saved</option>';
     selB.innerHTML = '<option value="">No builds saved</option>';
@@ -99,13 +107,13 @@ function populateBuildSelectors(){
   }
 }
 
-el('compareBtn').addEventListener('click', () => {
+if (el('compareBtn')) el('compareBtn').addEventListener('click', () => {
   const errEl = el('compareError');
-  errEl.textContent = '';
+  if (errEl) errEl.textContent = '';
 
   if (history.length < 2){
-    errEl.textContent = 'Save at least two builds before comparing.';
-    el('compareResults').innerHTML = '';
+    if (errEl) errEl.textContent = 'Save at least two builds before comparing.';
+    if (el('compareResults')) el('compareResults').innerHTML = '';
     return;
   }
 
@@ -113,18 +121,18 @@ el('compareBtn').addEventListener('click', () => {
   const idB = el('buildBSelect').value;
 
   if (!idA || !idB){
-    errEl.textContent = 'Select two builds to compare.';
+    if (errEl) errEl.textContent = 'Select two builds to compare.';
     return;
   }
   if (idA === idB){
-    errEl.textContent = 'Pick two different builds to compare.';
+    if (errEl) errEl.textContent = 'Pick two different builds to compare.';
     return;
   }
 
   const buildA = history.find(b => b.id === idA);
   const buildB = history.find(b => b.id === idB);
   if (!buildA || !buildB){
-    errEl.textContent = 'Could not find the selected builds.';
+    if (errEl) errEl.textContent = 'Could not find the selected builds.';
     return;
   }
 
@@ -133,6 +141,7 @@ el('compareBtn').addEventListener('click', () => {
 
 function renderBuildComparison(a, b){
   const wrap = el('compareResults');
+  if (!wrap) return;
   const aWinsOvr = a.maxOvr > b.maxOvr;
   const bWinsOvr = b.maxOvr > a.maxOvr;
 
@@ -181,6 +190,7 @@ function renderBuildComparison(a, b){
 /* ---------- training allocation (%) ---------- */
 function buildSplitRows(){
   const wrap = el('splitRows');
+  if (!wrap){ console.error('[Fighter Calc] Missing element with id="splitRows" in index.html'); return; }
   wrap.innerHTML = '';
   STATS.forEach(s => {
     const row = document.createElement('div');
@@ -202,9 +212,169 @@ function buildSplitRows(){
 function updateSplitTotal(){
   const sum = STATS.reduce((a,s)=>a+splitPct[s.key],0);
   const disp = el('splitTotalDisplay');
+  if (!disp) return;
   disp.textContent = sum + '%';
   disp.className = 'v ' + (sum===100 ? 'ok' : 'bad');
 }
 
 /* ---------- predict ---------- */
-el('predictBtn').addEventL
+if (el('predictBtn')) el('predictBtn').addEventListener('click', () => {
+  const errEl = el('predictError');
+  if (errEl) errEl.textContent = '';
+  const blocks = totalBlocksNeeded();
+  const trainings = totalTrainingsNeeded();
+
+  if (blocks <= 0){
+    const max = parseInt(el('maxOvrInput').value,10) || 0;
+    const cur = parseInt(el('currentOvrInput').value,10) || 0;
+    if (max <= cur){
+      if (errEl) errEl.textContent = 'Max OVR must be greater than Current OVR.';
+      resetPredictionResults();
+      return;
+    }
+  }
+
+  const sum = STATS.reduce((a,s)=>a+splitPct[s.key],0);
+  if (sum !== 100){
+    if (errEl) errEl.textContent = 'Percentages must total exactly 100% before predicting.';
+    return;
+  }
+
+  let gained = {dexterity:0, agility:0, stamina:0, endurance:0, power:0};
+  let running = 0;
+  STATS.forEach((s,i) => {
+    let statBlocks;
+    if (i === STATS.length-1){
+      statBlocks = blocks - running;
+    } else {
+      statBlocks = Math.round(blocks * (splitPct[s.key]/100));
+      running += statBlocks;
+    }
+    gained[s.key] = statBlocks * trainingRates[s.key];
+  });
+
+  renderResults(gained, trainings, blocks);
+});
+
+function resetPredictionResults(){
+  const wrap = el('resultsWrap');
+  if (!wrap) return;
+  wrap.innerHTML = '<div class="placeholder-note">Set your stats and percentages, then hit Predict Final Stats.</div>';
+}
+
+function renderResults(gained, trainings, blocks){
+  const wrap = el('resultsWrap');
+  if (!wrap){ console.error('[Fighter Calc] Missing element with id="resultsWrap" in index.html'); return; }
+  const totalGain = STATS.reduce((a,s)=>a+gained[s.key],0);
+  const max = parseInt(el('maxOvrInput').value,10) || 0;
+  const cur = parseInt(el('currentOvrInput').value,10) || 0;
+  const finalOvr = Math.max(cur, max);
+
+  const maxStatVal = Math.max(...STATS.map(s => currentStats[s.key] + gained[s.key]), 1);
+
+  let html = `
+    <div class="result-summary">
+      <div class="rs-card"><div class="v">+${requiredOvrIncrease()}</div><div class="l">OVR Increase</div></div>
+      <div class="rs-card"><div class="v">${trainings}</div><div class="l">Total Trainings</div></div>
+      <div class="rs-card"><div class="v">+${totalGain}</div><div class="l">Total Stat Gained</div></div>
+      <div class="rs-card"><div class="v">${finalOvr}</div><div class="l">Final OVR</div></div>
+    </div>
+  `;
+
+  STATS.forEach(s => {
+    const cur = currentStats[s.key];
+    const gain = gained[s.key];
+    const final = cur + gain;
+    const curPct = (cur/maxStatVal*100);
+    const gainPct = (gain/maxStatVal*100);
+    html += `
+      <div class="final-stat-row">
+        <div class="fname">${s.name}</div>
+        <div class="growth-track">
+          <div class="growth-current" style="width:${curPct}%; background:${s.color}66;"></div>
+          <div class="growth-gain" style="left:${curPct}%; width:${gainPct}%; background:${s.color};"></div>
+        </div>
+        <div class="fval">${final} <span class="gain">${gain>0?'(+'+gain+')':''}</span></div>
+      </div>
+    `;
+  });
+
+  wrap.innerHTML = html;
+}
+
+/* ---------- save build ---------- */
+if (el('saveBuildBtn')) el('saveBuildBtn').addEventListener('click', () => {
+  const errEl = el('saveError');
+  if (errEl) errEl.textContent = '';
+  const nameInput = el('buildNameInput');
+  historyCounter++;
+  const label = (nameInput && nameInput.value.trim()) || `Build #${historyCounter}`;
+
+  const build = {
+    id: Date.now() + '-' + historyCounter,
+    label,
+    time: new Date().toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}),
+    currentOvr: parseInt(el('currentOvrInput').value,10) || 0,
+    maxOvr: parseInt(el('maxOvrInput').value,10) || 0,
+    stats: {...currentStats},
+    caps: {...caps},
+  };
+  history.unshift(build);
+  if (history.length > 25) history.pop();
+  if (nameInput) nameInput.value = '';
+  renderHistory();
+  populateBuildSelectors();
+});
+
+function renderHistory(){
+  const wrap = el('historyList');
+  if (!wrap) return;
+  if (history.length === 0){
+    wrap.innerHTML = '<div class="placeholder-note">No builds saved yet.</div>';
+    return;
+  }
+  wrap.innerHTML = '';
+  history.forEach(build => {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    item.innerHTML = `
+      <div class="history-top">
+        <span class="history-name">${build.label}</span>
+        <span class="history-time">${build.time}</span>
+      </div>
+      <div class="history-detail">OVR ${build.currentOvr} → ${build.maxOvr}</div>
+      <div class="history-actions">
+        <button class="load-btn" data-id="${build.id}">Load</button>
+        <button class="del-btn" data-id="${build.id}">Delete</button>
+      </div>
+    `;
+    item.querySelector('.load-btn').addEventListener('click', () => loadBuild(build.id));
+    item.querySelector('.del-btn').addEventListener('click', () => deleteBuild(build.id));
+    wrap.appendChild(item);
+  });
+}
+
+function loadBuild(id){
+  const build = history.find(b => b.id === id);
+  if (!build) return;
+  if (el('currentOvrInput')) el('currentOvrInput').value = build.currentOvr;
+  if (el('maxOvrInput')) el('maxOvrInput').value = build.maxOvr;
+  currentStats = {...build.stats};
+  caps = {...build.caps};
+  buildStatInputRows();
+  updateHero();
+  resetPredictionResults();
+}
+
+function deleteBuild(id){
+  history = history.filter(b => b.id !== id);
+  renderHistory();
+  populateBuildSelectors();
+  if (el('compareResults')) el('compareResults').innerHTML = '';
+}
+
+/* ---------- init (each step guarded so one failure can't block the rest) ---------- */
+try { buildStatInputRows(); } catch (e) { console.error('[Fighter Calc] buildStatInputRows failed:', e); }
+try { populateBuildSelectors(); } catch (e) { console.error('[Fighter Calc] populateBuildSelectors failed:', e); }
+try { buildSplitRows(); } catch (e) { console.error('[Fighter Calc] buildSplitRows failed:', e); }
+try { updateHero(); } catch (e) { console.error('[Fighter Calc] updateHero failed:', e); }

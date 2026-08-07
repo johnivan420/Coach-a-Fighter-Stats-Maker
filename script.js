@@ -211,9 +211,21 @@ function buildSplitRows(){
       e.target.value = val;
       el(`split-pct-${s.key}`).textContent = val + '%';
       updateSplitTotal();
+      updateSliderMaxes();
     });
   });
   updateSplitTotal();
+  updateSliderMaxes();
+}
+function updateSliderMaxes(){
+  STATS.forEach(s => {
+    const inp = el(`split-range-${s.key}`);
+    if (!inp) return;
+    const othersSum = STATS.reduce((a,st) => st.key === s.key ? a : a + splitPct[st.key], 0);
+    const maxAllowed = Math.max(0, 100 - othersSum);
+    inp.max = maxAllowed;
+    if (parseInt(inp.value,10) > maxAllowed) inp.value = maxAllowed;
+  });
 }
 function updateSplitTotal(){
   const sum = STATS.reduce((a,s)=>a+splitPct[s.key],0);

@@ -14,19 +14,10 @@ const statByKey = key => STATS.find(s => s.key === key);
 
 let currentStats = {dexterity:500, agility:500, stamina:500, endurance:500, power:500};
 let caps = {dexterity:null, agility:null, stamina:null, endurance:null, power:null};
-let statA = 'power';
-let statB = 'dexterity';
-let lastComparison = null;
 let history = [];
 let historyCounter = 0;
 
 const el = id => document.getElementById(id);
-
-function capFor(key){
-  const room = MAX_STAT - currentStats[key];
-  if (caps[key] === null || caps[key] === undefined) return Math.max(0, room);
-  return Math.max(0, Math.min(caps[key], room));
-}
 
 /* ---------- stat inputs ---------- */
 function buildStatInputRows(){
@@ -83,70 +74,99 @@ function updateHero(){
 el('currentOvrInput').addEventListener('input', updateHero);
 el('maxOvrInput').addEventListener('input', updateHero);
 
-/* ---------- compare selectors ---------- */
-function populateSelectors(){
-  const selA = el('statASelect');
-  const selB = el('statBSelect');
-  selA.innerHTML = STATS.map(s => `<option value="${s.key}" ${s.key===statA?'selected':''}>${s.name}</option>`).join('');
-  selB.innerHTML = STATS.map(s => `<option value="${s.key}" ${s.key===statB?'selected':''}>${s.name}</option>`).join('');
-  selA.addEventListener('change', e => { statA = e.target.value; });
-  selB.addEventListener('change', e => { statB = e.target.value; });
+/* ---------- compare builds ---------- */
+function populateBuildSelectors(){
+  const selA = el('buildASelect');
+  const selB = el('buildBSelect');
+  if (history.length === 0){
+    selA.innerHTML = '<option value="">No builds saved</option>';
+    selB.innerHTML = '<option value="">No builds saved</option>';
+    return;
+  }
+  const options = history.map(b => `<option value="${b.id}">${b.label} — ${b.time}</option>`).join('');
+  selA.innerHTML = options;
+  selB.innerHTML = options;
+  if (history.length > 1){
+    selB.selectedIndex = 1;
+  }
 }
 
-/* ---------- compare logic ---------- */
-el('compareBtn').addEventListener('click', () => runComparison(true));
-
-function runComparison(showErrors){
+el('compareBtn').addEventListener('click', () => {
   const errEl = el('compareError');
   errEl.textContent = '';
-  if (statA === statB){
-    if (showErrors) errEl.textContent = 'Pick two different stats to compare.';
-    return;
-  }
-  const total = totalTrainingsNeeded();
-  if (total <= 0){
-    if (showErrors) errEl.textContent = 'Max OVR must be greater than Current OVR.';
+
+  if (history.length < 2){
+    errEl.textContent = 'Save at least two builds before comparing.';
+    el('compareResults').innerHTML = '';
     return;
   }
 
-  const a = statByKey(statA), b = statByKey(statB);
-  const capA = capFor(statA), capB = capFor(statB);
-  const gainA = Math.min(total, capA);
-  const gainB = Math.min(total, capB);
-  const finalA = currentStats[statA] + gainA;
-  const finalB = currentStats[statB] + gainB;
+  const idA = el('buildASelect').value;
+  const idB = el('buildBSelect').value;
 
-  lastComparison = {statA, statB, total, gainA, gainB, finalA, finalB, cappedA: gainA<total, cappedB: gainB<total};
-  renderComparison();
-}
+  if (!idA || !idB){
+    errEl.textContent = 'Select two builds to compare.';
+    return;
+  }
+  if (idA === idB){
+    errEl.textContent = 'Pick two different builds to compare.';
+    return;
+  }
 
-function renderComparison(){
+  const buildA = history.find(b => b.id === idA);
+  const buildB = history.find(b => b.id === idB);
+  if (!buildA || !buildB){
+    errEl.textContent = 'Could not find the selected builds.';
+    return;
+  }
+
+  renderBuildComparison(buildA, buildB);
+});
+
+function renderBuildComparison(a, b){
   const wrap = el('compareResults');
-  if (!lastComparison){ wrap.innerHTML=''; return; }
-  const {statA:aKey, statB:bKey, gainA, gainB, finalA, finalB, cappedA, cappedB} = lastComparison;
-  const a = statByKey(aKey), b = statByKey(bKey);
-  const aWins = finalA > finalB;
-  const bWins = finalB > finalA;
-  const diff = Math.abs(finalA - finalB);
+  const aWinsOvr = a.maxOvr > b.maxOvr;
+  const bWinsOvr = b.maxOvr > a.maxOvr;
+
+  let rows = '';
+  let totalA = 0, totalB = 0;
+  STATS.forEach(s => {
+    const va = a.stats[s.key];
+    const vb = b.stats[s.key];
+    totalA += va;
+    totalB += vb;
+    const aWin = va > vb;
+    const bWin = vb > va;
+    rows += `
+      <div class="build-compare-row">
+        <div class="bc-stat"><span class="dot" style="background:${s.color}"></span>${s.name}</div>
+        <div class="bc-val ${aWin ? 'bc-win' : ''}">${va}</div>
+        <div class="bc-val ${bWin ? 'bc-win' : ''}">${vb}</div>
+      </div>`;
+  });
+
+  const totalAWin = totalA > totalB;
+  const totalBWin = totalB > totalA;
+  const diff = Math.abs(totalA - totalB);
 
   wrap.innerHTML = `
-    <div class="compare-grid">
-      <div class="compare-card ${aWins?'winner':''}">
-        ${aWins?'<div class="win-badge">Higher</div>':''}
-        <div class="cname">${a.name}</div>
-        <div class="cfinal">${finalA}</div>
-        <div class="cgain">+${gainA}${cappedA?' (cap reached)':''}</div>
-        <div class="ccur">from ${currentStats[aKey]}</div>
-      </div>
-      <div class="compare-card ${bWins?'winner':''}">
-        ${bWins?'<div class="win-badge">Higher</div>':''}
-        <div class="cname">${b.name}</div>
-        <div class="cfinal">${finalB}</div>
-        <div class="cgain">+${gainB}${cappedB?' (cap reached)':''}</div>
-        <div class="ccur">from ${currentStats[bKey]}</div>
-      </div>
+    <div class="build-compare-head">
+      <div></div>
+      <div class="bc-name ${totalAWin ? 'bc-win' : ''}">${a.label}</div>
+      <div class="bc-name ${totalBWin ? 'bc-win' : ''}">${b.label}</div>
     </div>
-    <div class="compare-diff">${diff===0 ? 'Both stats land at the same final value.' : `<b>${(aWins?a.name:b.name)}</b> ends ${diff} points higher if trained exclusively.`}</div>
+    <div class="build-compare-row">
+      <div class="bc-stat">Target OVR</div>
+      <div class="bc-val ${aWinsOvr ? 'bc-win' : ''}">${a.maxOvr}</div>
+      <div class="bc-val ${bWinsOvr ? 'bc-win' : ''}">${b.maxOvr}</div>
+    </div>
+    ${rows}
+    <div class="build-compare-row build-compare-total">
+      <div class="bc-stat">Total Stats</div>
+      <div class="bc-val ${totalAWin ? 'bc-win' : ''}">${totalA}</div>
+      <div class="bc-val ${totalBWin ? 'bc-win' : ''}">${totalB}</div>
+    </div>
+    <div class="compare-diff">${diff===0 ? 'Both builds have equal total stats.' : `<b>${totalAWin ? a.label : b.label}</b> has ${diff} more total stat points.`}</div>
   `;
 }
 
@@ -166,12 +186,12 @@ el('saveBuildBtn').addEventListener('click', () => {
     maxOvr: parseInt(el('maxOvrInput').value,10) || 0,
     stats: {...currentStats},
     caps: {...caps},
-    comparison: lastComparison ? {...lastComparison} : null,
   };
   history.unshift(build);
   if (history.length > 25) history.pop();
   nameInput.value = '';
   renderHistory();
+  populateBuildSelectors();
 });
 
 function renderHistory(){
@@ -184,17 +204,12 @@ function renderHistory(){
   history.forEach(build => {
     const item = document.createElement('div');
     item.className = 'history-item';
-    let compareLine = 'No comparison run for this build.';
-    if (build.comparison){
-      const a = statByKey(build.comparison.statA), b = statByKey(build.comparison.statB);
-      compareLine = `<b>${a.name}</b> ${build.comparison.finalA} vs <b>${b.name}</b> ${build.comparison.finalB}`;
-    }
     item.innerHTML = `
       <div class="history-top">
         <span class="history-name">${build.label}</span>
         <span class="history-time">${build.time}</span>
       </div>
-      <div class="history-detail">OVR ${build.currentOvr} → ${build.maxOvr}<br>${compareLine}</div>
+      <div class="history-detail">OVR ${build.currentOvr} → ${build.maxOvr}</div>
       <div class="history-actions">
         <button class="load-btn" data-id="${build.id}">Load</button>
         <button class="del-btn" data-id="${build.id}">Delete</button>
@@ -215,24 +230,16 @@ function loadBuild(id){
   caps = {...build.caps};
   buildStatInputRows();
   updateHero();
-  if (build.comparison){
-    statA = build.comparison.statA;
-    statB = build.comparison.statB;
-    populateSelectors();
-    lastComparison = {...build.comparison};
-    renderComparison();
-  } else {
-    lastComparison = null;
-    el('compareResults').innerHTML = '';
-  }
 }
 
 function deleteBuild(id){
   history = history.filter(b => b.id !== id);
   renderHistory();
+  populateBuildSelectors();
+  el('compareResults').innerHTML = '';
 }
 
 /* ---------- init ---------- */
 buildStatInputRows();
-populateSelectors();
+populateBuildSelectors();
 updateHero();

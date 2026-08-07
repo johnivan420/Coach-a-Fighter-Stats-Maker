@@ -14,7 +14,7 @@
   <div class="masthead">
     <div class="eyebrow">Coach a Fighter</div>
     <h1>Max Training Potential</h1>
-    <div class="sub">Compare training outcomes, predict final stats, and track your fighter builds</div>
+    <div class="sub">Set your stats, allocate training %, and predict your final build</div>
   </div>
 
   <!-- HERO: OVR progress -->
@@ -40,12 +40,27 @@
   </div>
 
   <div class="grid">
-    <!-- LEFT: inputs + compare -->
+    <!-- LEFT: current stats/cap + allocation + predict, then compare -->
     <div>
       <div class="panel">
-        <h2><span class="bar"></span>Current Stats &amp; Caps</h2>
+        <h2><span class="bar"></span>Current Stats &amp; Cap</h2>
         <div id="statInputRows"></div>
-        <div class="panel-note">Set a cap to restrict how many training points a stat can receive during comparison. Leave it blank for no limit.</div>
+        <div class="panel-note">Set a cap to restrict how many training points a stat can receive. Leave it blank for no limit.</div>
+
+        <div class="panel-subhead">Training Allocation (%)</div>
+        <div id="splitRows"></div>
+        <div class="split-total-row">
+          <span>Total Allocation</span>
+          <span class="v" id="splitTotalDisplay">0%</span>
+        </div>
+
+        <div class="predict-row">
+          <button class="btn predict-btn" id="predictBtn">Predict Final Stats</button>
+          <div class="predict-results" id="resultsWrap">
+            <div class="placeholder-note">Set your stats and percentages, then hit Predict Final Stats.</div>
+          </div>
+        </div>
+        <div class="error-msg" id="predictError"></div>
       </div>
 
       <div class="panel">
@@ -85,55 +100,6 @@
       <div class="panel">
         <h2><span class="bar"></span>Build History</h2>
         <div id="historyList"><div class="placeholder-note">No builds saved yet.</div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="grid">
-    <!-- LEFT: gain rates + training plan -->
-    <div>
-      <div class="panel">
-        <h2><span class="bar"></span>Gain Rates</h2>
-        <div id="rateRows"></div>
-        <div class="panel-note">"Gain / 10 Trainings" is how much that stat increases per training block — set this to match the game's actual training rates. Toggle a stat off to exclude it from every prediction mode.</div>
-      </div>
-
-      <div class="panel">
-        <h2><span class="bar"></span>Training Plan</h2>
-        <div class="mode-tabs">
-          <div class="mode-tab active" data-mode="one">One Stat</div>
-          <div class="mode-tab" data-mode="split">Split Training</div>
-          <div class="mode-tab" data-mode="strongest">Strongest Build</div>
-        </div>
-
-        <div class="mode-panel show" id="mode-one">
-          <div id="oneStatRadios"></div>
-        </div>
-
-        <div class="mode-panel" id="mode-split">
-          <div id="splitRows"></div>
-          <div class="split-total-row">
-            <span>Total Allocation</span>
-            <span class="v" id="splitTotalDisplay">0%</span>
-          </div>
-        </div>
-
-        <div class="mode-panel" id="mode-strongest">
-          <div id="strongestRanking"></div>
-        </div>
-
-        <button class="btn" id="predictBtn">Predict Final Stats</button>
-        <div class="error-msg" id="planError"></div>
-      </div>
-    </div>
-
-    <!-- RIGHT: prediction results -->
-    <div>
-      <div class="panel">
-        <h2><span class="bar"></span>Prediction Results</h2>
-        <div id="resultsWrap">
-          <div class="placeholder-note">Set your stats, choose a training plan, and hit Predict Final Stats.</div>
-        </div>
       </div>
     </div>
   </div>

@@ -1,302 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Coach a Fighter Stats Calculator</title>
-    <meta name="description" content="A Coach a Fighter stats calculator to analyze OVR, stats, and fighter builds.">
-
-    <link rel="stylesheet" href="style.css">
-
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<title>Max Training Potential — Fighter Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A Coach a Fighter stats calculator to analyze OVR, stats, and fighter builds.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+<div class="wrap">
+  <div class="masthead">
+    <div class="eyebrow">Coach a Fighter</div>
+    <h1>Max Training Potential</h1>
+    <div class="sub">Compare training outcomes and track your fighter builds</div>
+  </div>
 
-<div class="container">
+  <!-- HERO: OVR progress -->
+  <div class="hero-panel">
+    <div class="ovr-inputs-row">
+      <div class="ovr-input-block">
+        <label>Current OVR</label>
+        <input type="number" id="currentOvrInput" min="1" max="200" value="80">
+      </div>
+      <div class="arrow-sep">→</div>
+      <div class="ovr-input-block">
+        <label>Max OVR</label>
+        <input type="number" id="maxOvrInput" min="1" max="200" value="120">
+      </div>
+    </div>
+    <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%;"></div></div>
+    <div class="xp-labels"><span id="xpLeftLabel">OVR 80</span><span id="xpRightLabel">OVR 120</span></div>
+    <div class="hero-stats-row">
+      <div class="hero-stat"><div class="val accent" id="ovrIncreaseVal">0</div><div class="lbl">OVR Increase Needed</div></div>
+      <div class="hero-stat"><div class="val" id="trainingsNeededVal">0</div><div class="lbl">Trainings Required</div></div>
+      <div class="hero-stat"><div class="val" id="blocksNeededVal">0</div><div class="lbl">Training Blocks (×10)</div></div>
+    </div>
+  </div>
 
-    <!-- HEADER -->
-    <div class="masthead">
-        <div class="eyebrow">Coach a Fighter Tool</div>
+  <div class="grid">
+    <!-- LEFT: inputs + compare -->
+    <div>
+      <div class="panel">
+        <h2><span class="bar"></span>Current Stats &amp; Caps</h2>
+        <div id="statInputRows"></div>
+        <div class="panel-note">Set a cap to restrict how many training points a stat can receive during comparison. Leave it blank for no limit.</div>
+      </div>
 
-        <h1>
-            Stats Calculator
-        </h1>
-
-        <div class="sub">
-            Optimize your fighter build and maximize your OVR
+      <div class="panel">
+        <h2><span class="bar"></span>Compare Two Stats</h2>
+        <div class="compare-select-row">
+          <div class="compare-select-block">
+            <label>Stat A</label>
+            <select id="statASelect"></select>
+          </div>
+          <div class="vs-tag">VS</div>
+          <div class="compare-select-block">
+            <label>Stat B</label>
+            <select id="statBSelect"></select>
+          </div>
         </div>
+        <button class="btn" id="compareBtn">Compare Stats</button>
+        <div class="error-msg" id="compareError"></div>
+        <div id="compareResults"></div>
+      </div>
     </div>
 
-
-    <!-- OVR HERO -->
-    <div class="hero-panel">
-
-        <div class="ovr-inputs-row">
-
-            <div class="ovr-input-block">
-                <label>Current OVR</label>
-                <input id="currentOVR" type="number" value="61">
-            </div>
-
-            <div class="arrow-sep">
-                →
-            </div>
-
-            <div class="ovr-input-block">
-                <label>Target OVR</label>
-                <input id="targetOVR" type="number" value="101">
-            </div>
-
+    <!-- RIGHT: save + history -->
+    <div>
+      <div class="panel">
+        <h2><span class="bar"></span>Save Build</h2>
+        <div class="save-row">
+          <div class="save-input-block">
+            <label>Build Name</label>
+            <input type="text" id="buildNameInput" placeholder="e.g. Power Focus Build">
+          </div>
+          <button class="btn save-btn" id="saveBuildBtn">Save</button>
         </div>
+        <div class="error-msg" id="saveError"></div>
+        <div class="panel-note">Saves your current OVR range, stats, caps, and last comparison. Kept for this session — export or screenshot if you want to keep it longer.</div>
+      </div>
 
-
-        <div class="xp-track">
-            <div class="xp-fill" id="xpFill"></div>
-        </div>
-
-        <div class="xp-labels">
-            <span>Current</span>
-            <span>Goal</span>
-        </div>
-
-
-        <div class="hero-stats-row">
-
-            <div class="hero-stat">
-                <div class="val accent" id="neededOVR">
-                    40
-                </div>
-                <div class="lbl">
-                    OVR Needed
-                </div>
-            </div>
-
-
-            <div class="hero-stat">
-                <div class="val" id="statGain">
-                    400
-                </div>
-                <div class="lbl">
-                    Stats Needed
-                </div>
-            </div>
-
-
-        </div>
-
+      <div class="panel">
+        <h2><span class="bar"></span>Build History</h2>
+        <div id="historyList"><div class="placeholder-note">No builds saved yet.</div></div>
+      </div>
     </div>
-
-
-
-    <div class="grid">
-
-
-        <!-- LEFT SIDE -->
-        <div>
-
-
-            <div class="panel">
-
-                <h2>
-                    <span class="bar"></span>
-                    Fighter Stats
-                </h2>
-
-
-                <div id="statsContainer">
-
-
-                    <!-- Stats will appear here -->
-
-                    <div class="stat-row">
-
-                        <div class="stat-name">
-                            <span class="dot"></span>
-                            Power
-                        </div>
-
-
-                        <div class="field-mini">
-
-                            <div class="fl">
-                                Current
-                            </div>
-
-                            <input id="power" type="number" value="113">
-
-                        </div>
-
-
-                        <div class="field-mini">
-
-                            <div class="fl">
-                                Cap
-                            </div>
-
-                            <input id="powerCap" type="number" value="3000">
-
-                        </div>
-
-
-                    </div>
-
-
-
-                </div>
-
-
-                <button class="btn" id="calculateBtn">
-                    Calculate
-                </button>
-
-
-            </div>
-
-
-
-
-            <!-- COMPARE -->
-
-            <div class="panel">
-
-                <h2>
-                    <span class="bar"></span>
-                    Compare Two Stats
-                </h2>
-
-
-                <div class="compare-select-row">
-
-
-                    <div class="compare-select-block">
-
-                        <label>
-                            Stat A
-                        </label>
-
-                        <select id="statASelect">
-                            <option>Power</option>
-                            <option>Agility</option>
-                            <option>Dexterity</option>
-                            <option>Stamina</option>
-                            <option>Endurance</option>
-                        </select>
-
-                    </div>
-
-
-                    <div class="vs-tag">
-                        VS
-                    </div>
-
-
-                    <div class="compare-select-block">
-
-                        <label>
-                            Stat B
-                        </label>
-
-                        <select id="statBSelect">
-                            <option>Agility</option>
-                            <option>Power</option>
-                            <option>Dexterity</option>
-                            <option>Stamina</option>
-                            <option>Endurance</option>
-                        </select>
-
-                    </div>
-
-
-                </div>
-
-
-                <button class="btn" id="compareBtn">
-                    Compare Stats
-                </button>
-
-
-                <div id="compareResults"></div>
-
-
-            </div>
-
-
-        </div>
-
-
-
-        <!-- RIGHT SIDE -->
-
-        <div>
-
-
-            <div class="panel">
-
-                <h2>
-                    <span class="bar"></span>
-                    Save Build
-                </h2>
-
-
-                <div class="save-row">
-
-                    <div class="save-input-block">
-
-                        <label>
-                            Build Name
-                        </label>
-
-                        <input id="buildNameInput"
-                        placeholder="Power Build">
-
-                    </div>
-
-
-                    <button class="btn save-btn" id="saveBuildBtn">
-                        Save
-                    </button>
-
-
-                </div>
-
-
-            </div>
-
-
-
-            <div class="panel">
-
-                <h2>
-                    <span class="bar"></span>
-                    Build History
-                </h2>
-
-
-                <div id="historyList">
-
-                    <div class="placeholder-note">
-                        No builds saved yet.
-                    </div>
-
-                </div>
-
-
-            </div>
-
-
-        </div>
-
-
-    </div>
-
-
+  </div>
 </div>
-
-
-
 <script src="script.js"></script>
-
 </body>
 </html>

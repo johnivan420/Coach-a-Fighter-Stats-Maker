@@ -40,12 +40,25 @@
   </div>
 
   <div class="grid">
-    <!-- LEFT: current stats/cap + allocation + predict, then compare -->
+    <!-- LEFT: current stats + scanner + allocation + predict, then compare -->
     <div>
       <div class="panel">
-        <h2><span class="bar"></span>Current Stats &amp; Caps</h2>
+        <h2><span class="bar"></span>Current Stats</h2>
         <div id="statInputRows"></div>
-        <div class="panel-note">Set a cap to restrict how many training points a stat can receive during comparison. Leave it blank for no limit.</div>
+
+        <button type="button" class="btn ghost scan-toggle-btn" id="scanToggleBtn">📷 Scan Fighter Stats</button>
+
+        <div class="scan-panel" id="scanPanel">
+          <div class="scan-upload-row">
+            <label class="btn ghost file-label" for="scanFileInput">Choose Image</label>
+            <input type="file" id="scanFileInput" accept="image/*" hidden>
+            <span class="scan-filename" id="scanFileName">No image selected</span>
+          </div>
+          <div class="scan-preview-wrap" id="scanPreviewWrap"></div>
+          <button type="button" class="btn" id="scanStatsBtn" disabled>Scan Stats</button>
+          <div class="scan-status" id="scanStatus"></div>
+          <div id="scanDetected"></div>
+        </div>
 
         <div class="panel-subhead">Training Allocation (%)</div>
         <div id="splitRows"></div>
@@ -94,7 +107,7 @@
           <button class="btn save-btn" id="saveBuildBtn">Save</button>
         </div>
         <div class="error-msg" id="saveError"></div>
-        <div class="panel-note">Saves your current OVR range, stats, caps, and last comparison. Kept for this session — export or screenshot if you want to keep it longer.</div>
+        <div class="panel-note">Saves your current OVR range, stats, and last comparison. Kept for this session — export or screenshot if you want to keep it longer.</div>
       </div>
 
       <div class="panel">
@@ -104,6 +117,7 @@
     </div>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

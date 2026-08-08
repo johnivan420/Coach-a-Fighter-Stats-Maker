@@ -16,6 +16,58 @@ const STATS = [
 ];
 const statByKey = key => STATS.find(s => s.key === key);
 
+/* ================= FIGHTER BASE STATS REFERENCE =================
+   To add a fighter later, just add a new line below:
+   {name:'Fighter Name', total:1234}  — use total:null if unknown (shows as —)
+================================================================= */
+const FIGHTERS = [
+  {name:'Apollo Creed',           total:1275},
+  {name:'Joe Louis',              total:null},
+  {name:'Roberto Durán',          total:null},
+  {name:'Muhammad Ali',           total:1000},
+  {name:'Floyd Mayweather Jr.',   total:975},
+  {name:'Rocky Marciano',         total:950},
+  {name:'Iron Mike',              total:885},
+  {name:'Thomas Hearns',          total:880},
+  {name:'Henry Armstrong',        total:855},
+  {name:'Roy Jones Jr.',          total:840},
+  {name:'Evander Holyfield',      total:835},
+  {name:'Julio César Chávez',     total:805},
+  {name:'Pernell Whitaker',       total:800},
+  {name:'Manny Pacquiao',         total:735},
+  {name:'Tyson Fury',             total:685},
+  {name:'Francis Ngannou',        total:685},
+  {name:'Gennady "GGG" Golovkin', total:670},
+  {name:'Artur Beterbiev',        total:665},
+  {name:'Naoya Inoue',            total:665},
+  {name:'Vitali Klitschko',       total:665},
+  {name:'Sugar Ray Robinson',     total:650},
+  {name:'Sugar Ray Leonard',      total:650},
+  {name:'Larry Holmes',           total:650},
+  {name:'Chris Eubank',           total:650},
+  {name:'Gervonta "Tank" Davis',  total:650},
+  {name:'Ilia Topuria',           total:640},
+  {name:'Naseem Hamed',           total:495},
+  {name:'Ryan Garcia',            total:440},
+  {name:'Canelo Alvarez',         total:430},
+  {name:'Anthony Joshua',         total:420},
+  {name:'Terence Crawford',       total:420},
+  {name:'Dmitry Bivol',           total:418},
+  {name:'Joe Frazier',            total:418},
+  {name:'Sonny Liston',           total:418},
+  {name:'Oleksandr Usyk',         total:418},
+  {name:'Devin Haney',            total:415},
+  {name:'Errol Spence Jr.',       total:372},
+  {name:'George Foreman',         total:352},
+  {name:'Abdullah Mason',         total:347},
+  {name:'Adrien Broner',          total:347},
+  {name:'Chris Eubank Jr.',       total:347},
+  {name:'Nigel Benn',             total:347},
+  {name:'Teofimo Lopez',          total:347},
+  {name:'Vasyl Lomachenko',       total:347},
+  {name:'Lennox Lewis',           total:347},
+];
+
 let currentStats = {dexterity:0, agility:0, stamina:0, endurance:0, power:0};
 let history = [];
 let historyCounter = 0;
@@ -523,8 +575,55 @@ function renderDetectedStats(results){
   });
 }
 
+/* ---------- fighter base stats reference ---------- */
+let selectedFighterName = null;
+
+function buildFighterList(filter){
+  const wrap = el('fighterListWrap');
+  if (!wrap){ console.error('[Fighter Calc] Missing element with id="fighterListWrap" in index.html'); return; }
+  const q = (filter || '').trim().toLowerCase();
+  const list = q ? FIGHTERS.filter(f => f.name.toLowerCase().includes(q)) : FIGHTERS;
+
+  if (list.length === 0){
+    wrap.innerHTML = '<div class="placeholder-note">No fighters match your search.</div>';
+    return;
+  }
+
+  wrap.innerHTML = '';
+  list.forEach(f => {
+    const row = document.createElement('div');
+    row.className = 'fighter-row' + (f.name === selectedFighterName ? ' selected' : '');
+    row.innerHTML = `
+      <div class="fr-name">${f.name}</div>
+      <div class="fr-total">${f.total === null ? '—' : f.total.toLocaleString()}</div>
+    `;
+    row.addEventListener('click', () => {
+      selectedFighterName = f.name;
+      renderSelectedFighterCard(f);
+      buildFighterList(el('fighterSearchInput') ? el('fighterSearchInput').value : '');
+    });
+    wrap.appendChild(row);
+  });
+}
+
+function renderSelectedFighterCard(f){
+  const card = el('fighterSelectedCard');
+  if (!card) return;
+  card.innerHTML = `
+    <div class="fsc-name">${f.name}</div>
+    <div class="fsc-total">${f.total === null ? '—' : f.total.toLocaleString()}</div>
+    <div class="fsc-label">Total Base Stats</div>
+  `;
+  card.classList.add('show');
+}
+
+if (el('fighterSearchInput')) el('fighterSearchInput').addEventListener('input', e => {
+  buildFighterList(e.target.value);
+});
+
 /* ---------- init (each step guarded so one failure can't block the rest) ---------- */
 try { buildStatInputRows(); } catch (e) { console.error('[Fighter Calc] buildStatInputRows failed:', e); }
 try { populateBuildSelectors(); } catch (e) { console.error('[Fighter Calc] populateBuildSelectors failed:', e); }
 try { buildSplitRows(); } catch (e) { console.error('[Fighter Calc] buildSplitRows failed:', e); }
 try { updateHero(); } catch (e) { console.error('[Fighter Calc] updateHero failed:', e); }
+try { buildFighterList(); } catch (e) { console.error('[Fighter Calc] buildFighterList failed:', e); }

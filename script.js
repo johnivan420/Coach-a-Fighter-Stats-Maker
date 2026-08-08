@@ -17,12 +17,14 @@ const STATS = [
 const statByKey = key => STATS.find(s => s.key === key);
 
 let currentStats = {dexterity:0, agility:0, stamina:0, endurance:0, power:0};
-let caps = {dexterity:null, agility:null, stamina:null, endurance:null, power:null};
 let history = [];
 let historyCounter = 0;
 
 /* percentage allocation for prediction */
 let splitPct = {dexterity:20, agility:20, stamina:20, endurance:20, power:20};
+
+/* scanner state */
+let scannedImageDataUrl = null;
 
 const el = id => document.getElementById(id);
 
@@ -40,18 +42,10 @@ function buildStatInputRows(){
         <span class="fl">Current</span>
         <input type="number" id="cur-${s.key}" min="0" max="${MAX_STAT}" value="${currentStats[s.key]}">
       </div>
-      <div class="field-mini">
-        <span class="fl">Cap (optional)</span>
-        <input type="number" id="cap-${s.key}" min="0" max="${MAX_STAT}" placeholder="No limit" value="${caps[s.key] === null ? '' : caps[s.key]}">
-      </div>
     `;
     wrap.appendChild(row);
     row.querySelector(`#cur-${s.key}`).addEventListener('input', e => {
       currentStats[s.key] = Math.max(0, Math.min(MAX_STAT, parseInt(e.target.value,10) || 0));
-    });
-    row.querySelector(`#cap-${s.key}`).addEventListener('input', e => {
-      const v = e.target.value;
-      caps[s.key] = v === '' ? null : Math.max(0, parseInt(v,10) || 0);
     });
   });
 }
@@ -198,20 +192,33 @@ function buildSplitRows(){
     row.innerHTML = `
       <div class="sname">${s.name}</div>
       <input type="range" min="0" max="100" value="${splitPct[s.key]}" id="split-range-${s.key}">
-      <div class="spct" id="split-pct-${s.key}">${splitPct[s.key]}%</div>
+      <div class="spct-wrap">
+        <input type="number" min="0" max="100" value="${splitPct[s.key]}" id="split-num-${s.key}" class="spct-input">
+        <span class="spct-sign">%</span>
+      </div>
     `;
     wrap.appendChild(row);
-    row.querySelector(`#split-range-${s.key}`).addEventListener('input', e => {
-      let val = parseInt(e.target.value,10) || 0;
+
+    const applyValue = (val) => {
       const othersSum = STATS.reduce((a,st) => st.key === s.key ? a : a + splitPct[st.key], 0);
       const maxAllowed = Math.max(0, 100 - othersSum);
       if (val > maxAllowed) val = maxAllowed;
       if (val < 0) val = 0;
       splitPct[s.key] = val;
-      e.target.value = val;
-      el(`split-pct-${s.key}`).textContent = val + '%';
+      el(`split-range-${s.key}`).value = val;
+      el(`split-num-${s.key}`).value = val;
       updateSplitTotal();
       updateSliderMaxes();
+    };
+
+    row.querySelector(`#split-range-${s.key}`).addEventListener('input', e => {
+      applyValue(parseInt(e.target.value,10) || 0);
+    });
+    row.querySelector(`#split-num-${s.key}`).addEventListener('input', e => {
+      applyValue(parseInt(e.target.value,10) || 0);
+    });
+    row.querySelector(`#split-num-${s.key}`).addEventListener('blur', e => {
+      e.target.value = splitPct[s.key];
     });
   });
   updateSplitTotal();
@@ -220,10 +227,12 @@ function buildSplitRows(){
 function updateSliderMaxes(){
   STATS.forEach(s => {
     const inp = el(`split-range-${s.key}`);
+    const numInp = el(`split-num-${s.key}`);
     if (!inp) return;
     const othersSum = STATS.reduce((a,st) => st.key === s.key ? a : a + splitPct[st.key], 0);
     const maxAllowed = Math.max(0, 100 - othersSum);
     inp.max = maxAllowed;
+    if (numInp) numInp.max = maxAllowed;
     if (parseInt(inp.value,10) > maxAllowed) inp.value = maxAllowed;
   });
 }
@@ -335,7 +344,6 @@ if (el('saveBuildBtn')) el('saveBuildBtn').addEventListener('click', () => {
     currentOvr: parseInt(el('currentOvrInput').value,10) || 0,
     maxOvr: parseInt(el('maxOvrInput').value,10) || 0,
     stats: {...currentStats},
-    caps: {...caps},
   };
   history.unshift(build);
   if (history.length > 25) history.pop();
@@ -378,7 +386,6 @@ function loadBuild(id){
   if (el('currentOvrInput')) el('currentOvrInput').value = build.currentOvr;
   if (el('maxOvrInput')) el('maxOvrInput').value = build.maxOvr;
   currentStats = {...build.stats};
-  caps = {...build.caps};
   buildStatInputRows();
   updateHero();
   resetPredictionResults();
@@ -389,6 +396,130 @@ function deleteBuild(id){
   renderHistory();
   populateBuildSelectors();
   if (el('compareResults')) el('compareResults').innerHTML = '';
+}
+
+/* ---------- screenshot stat scanner (client-side OCR via Tesseract.js) ---------- */
+if (el('scanToggleBtn')) el('scanToggleBtn').addEventListener('click', () => {
+  const panel = el('scanPanel');
+  if (!panel) return;
+  panel.classList.toggle('open');
+});
+
+if (el('scanFileInput')) el('scanFileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  const previewWrap = el('scanPreviewWrap');
+  const nameLabel = el('scanFileName');
+  const scanBtn = el('scanStatsBtn');
+  const detectedWrap = el('scanDetected');
+  const statusEl = el('scanStatus');
+  if (!file){
+    scannedImageDataUrl = null;
+    if (scanBtn) scanBtn.disabled = true;
+    return;
+  }
+  if (nameLabel) nameLabel.textContent = file.name;
+  if (detectedWrap) detectedWrap.innerHTML = '';
+  if (statusEl) statusEl.textContent = '';
+  const reader = new FileReader();
+  reader.onload = evt => {
+    scannedImageDataUrl = evt.target.result;
+    if (previewWrap) previewWrap.innerHTML = `<img src="${scannedImageDataUrl}" class="scan-preview-img" alt="Uploaded fighter stats screenshot">`;
+    if (scanBtn) scanBtn.disabled = false;
+  };
+  reader.readAsDataURL(file);
+});
+
+if (el('scanStatsBtn')) el('scanStatsBtn').addEventListener('click', async () => {
+  const statusEl = el('scanStatus');
+  const scanBtn = el('scanStatsBtn');
+  const detectedWrap = el('scanDetected');
+
+  if (!scannedImageDataUrl){
+    if (statusEl) statusEl.textContent = 'Upload an image first.';
+    return;
+  }
+  if (typeof Tesseract === 'undefined'){
+    if (statusEl) statusEl.textContent = 'OCR engine failed to load. Check your connection and refresh the page.';
+    return;
+  }
+
+  if (scanBtn) scanBtn.disabled = true;
+  if (statusEl) statusEl.textContent = 'Scanning image… this can take a few seconds.';
+  if (detectedWrap) detectedWrap.innerHTML = '';
+
+  try {
+    const { data } = await Tesseract.recognize(scannedImageDataUrl, 'eng');
+    const results = parseStatsFromText(data.text || '');
+    if (statusEl) statusEl.textContent = '';
+    renderDetectedStats(results);
+  } catch (err){
+    console.error('[Fighter Calc] OCR failed:', err);
+    if (statusEl) statusEl.textContent = 'Scan failed. Try a clearer or larger screenshot.';
+  } finally {
+    if (scanBtn) scanBtn.disabled = false;
+  }
+});
+
+function parseStatsFromText(text){
+  const cleaned = text.replace(/,/g, ' ');
+  const results = {};
+  STATS.forEach(s => {
+    const regex = new RegExp(s.name + '[^0-9]{0,20}(\\d{1,5})', 'i');
+    const match = cleaned.match(regex);
+    if (match){
+      const val = Math.max(0, Math.min(MAX_STAT, parseInt(match[1],10) || 0));
+      results[s.key] = val;
+    }
+  });
+  return results;
+}
+
+function renderDetectedStats(results){
+  const wrap = el('scanDetected');
+  if (!wrap) return;
+  const foundCount = STATS.filter(s => results[s.key] !== undefined).length;
+
+  if (foundCount === 0){
+    wrap.innerHTML = '<div class="scan-note bad">No stats were detected. Try a clearer, larger, or better-lit screenshot — or enter values manually below.</div>';
+    return;
+  }
+
+  let html = '<div class="scan-note">Detected Stats — review and correct if needed:</div>';
+  STATS.forEach(s => {
+    const val = results[s.key];
+    const found = val !== undefined;
+    html += `
+      <div class="scan-detect-row">
+        <div class="sd-name"><span class="dot" style="background:${s.color}"></span>${s.name}</div>
+        <input type="number" min="0" max="${MAX_STAT}" id="scan-val-${s.key}" value="${found ? val : ''}" placeholder="Not found">
+        <span class="sd-mark ${found ? 'ok' : 'bad'}">${found ? '✓' : '?'}</span>
+      </div>
+    `;
+  });
+  html += '<button type="button" class="btn" id="applyScanBtn">Apply Stats</button>';
+  wrap.innerHTML = html;
+
+  el('applyScanBtn').addEventListener('click', () => {
+    STATS.forEach(s => {
+      const inp = el(`scan-val-${s.key}`);
+      if (inp && inp.value !== ''){
+        currentStats[s.key] = Math.max(0, Math.min(MAX_STAT, parseInt(inp.value,10) || 0));
+      }
+    });
+    buildStatInputRows();
+    updateHero();
+    const statusEl = el('scanStatus');
+    if (statusEl){
+      statusEl.textContent = 'Stats applied to Current Stats above!';
+      statusEl.classList.add('good');
+      setTimeout(() => {
+        if (el('scanStatus')){
+          el('scanStatus').textContent = '';
+          el('scanStatus').classList.remove('good');
+        }
+      }, 3000);
+    }
+  });
 }
 
 /* ---------- init (each step guarded so one failure can't block the rest) ---------- */

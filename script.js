@@ -8,11 +8,11 @@ const trainingRates = {dexterity:30, agility:30, stamina:30, endurance:30, power
 /* ============================================ */
 
 const STATS = [
-  {key:'dexterity', name:'Dexterity', color:'#22E7F0'},
-  {key:'agility',   name:'Agility',   color:'#5CF2C0'},
-  {key:'stamina',   name:'Stamina',   color:'#3FDB8C'},
-  {key:'endurance', name:'Endurance', color:'#B98AF0'},
-  {key:'power',     name:'Power',     color:'#FF7A3D'},
+  {key:'dexterity', name:'Dexterity', abbr:'DEX',  color:'#22E7F0'},
+  {key:'agility',   name:'Agility',   abbr:'AGL',  color:'#5CF2C0'},
+  {key:'stamina',   name:'Stamina',   abbr:'STM',  color:'#3FDB8C'},
+  {key:'endurance', name:'Endurance', abbr:'ENDR', color:'#B98AF0'},
+  {key:'power',     name:'Power',     abbr:'PWR',  color:'#FF7A3D'},
 ];
 const statByKey = key => STATS.find(s => s.key === key);
 
@@ -464,7 +464,8 @@ function parseStatsFromText(text){
   const cleaned = text.replace(/,/g, ' ');
   const results = {};
   STATS.forEach(s => {
-    const regex = new RegExp(s.name + '[^0-9]{0,20}(\\d{1,5})', 'i');
+    const labelPattern = `(?:${s.name}|${s.abbr})`;
+    const regex = new RegExp('\\b' + labelPattern + '\\b[^0-9]{0,20}(\\d{1,5})', 'i');
     const match = cleaned.match(regex);
     if (match){
       const val = Math.max(0, Math.min(MAX_STAT, parseInt(match[1],10) || 0));

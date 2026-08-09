@@ -2,9 +2,15 @@
 const TRAININGS_PER_OVR = 10; // every 10 trainings = +1 OVR
 const MAX_STAT = 3000;
 
-// Internal training rate per stat (points gained per 10 trainings).
-// Not shown in the UI, but still drives the prediction math.
-const trainingRates = {dexterity:30, agility:30, stamina:30, endurance:30, power:30};
+// Exact stat gains per single training session of each type.
+// Each training type can raise its primary stat AND (for some types) a secondary stat.
+const TRAINING_GAINS = {
+  power:     {power:3},                // Power Training: +3 Power only
+  endurance: {endurance:3, power:1},   // Endurance Training: +3 Endurance, +1 Power
+  dexterity: {dexterity:2, power:1},   // Dexterity Training: +2 Dexterity, +1 Power
+  agility:   {agility:1},              // Agility Training: +1 Agility only
+  stamina:   {stamina:3},              // Stamina Training: +3 Stamina only
+};
 /* ============================================ */
 
 const STATS = [
@@ -319,17 +325,26 @@ if (el('predictBtn')) el('predictBtn').addEventListener('click', () => {
     return;
   }
 
-  let gained = {dexterity:0, agility:0, stamina:0, endurance:0, power:0};
+  let trainingsOfType = {dexterity:0, agility:0, stamina:0, endurance:0, power:0};
   let running = 0;
   STATS.forEach((s,i) => {
-    let statBlocks;
+    let n;
     if (i === STATS.length-1){
-      statBlocks = blocks - running;
+      n = trainings - running;
     } else {
-      statBlocks = Math.round(blocks * (splitPct[s.key]/100));
-      running += statBlocks;
+      n = Math.round(trainings * (splitPct[s.key]/100));
+      running += n;
     }
-    gained[s.key] = statBlocks * trainingRates[s.key];
+    trainingsOfType[s.key] = n;
+  });
+
+  let gained = {dexterity:0, agility:0, stamina:0, endurance:0, power:0};
+  STATS.forEach(s => {
+    const n = trainingsOfType[s.key];
+    const gains = TRAINING_GAINS[s.key];
+    Object.keys(gains).forEach(statKey => {
+      gained[statKey] += n * gains[statKey];
+    });
   });
 
   renderResults(gained, trainings, blocks);
@@ -344,12 +359,22 @@ function resetPredictionResults(){
 function renderResults(gained, trainings, blocks){
   const wrap = el('resultsWrap');
   if (!wrap){ console.error('[Fighter Calc] Missing element with id="resultsWrap" in index.html'); return; }
-  const totalGain = STATS.reduce((a,s)=>a+gained[s.key],0);
+
+  const cappedFinals = {};
+  const cappedGains = {};
+  STATS.forEach(s => {
+    const cur = currentStats[s.key];
+    const final = Math.min(MAX_STAT, cur + gained[s.key]);
+    cappedFinals[s.key] = final;
+    cappedGains[s.key] = final - cur;
+  });
+
+  const totalGain = STATS.reduce((a,s)=>a+cappedGains[s.key],0);
   const max = parseInt(el('maxOvrInput').value,10) || 0;
   const cur = parseInt(el('currentOvrInput').value,10) || 0;
   const finalOvr = Math.max(cur, max);
 
-  const maxStatVal = Math.max(...STATS.map(s => currentStats[s.key] + gained[s.key]), 1);
+  const maxStatVal = Math.max(...STATS.map(s => cappedFinals[s.key]), 1);
 
   let html = `
     <div class="result-summary">
@@ -362,8 +387,8 @@ function renderResults(gained, trainings, blocks){
 
   STATS.forEach(s => {
     const cur = currentStats[s.key];
-    const gain = gained[s.key];
-    const final = cur + gain;
+    const final = cappedFinals[s.key];
+    const gain = cappedGains[s.key];
     const curPct = (cur/maxStatVal*100);
     const gainPct = (gain/maxStatVal*100);
     html += `

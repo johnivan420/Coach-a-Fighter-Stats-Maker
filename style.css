@@ -799,3 +799,69 @@
     color:var(--muted);
     line-height:1.6;
   }
+
+  /* ===== ACTIVE WORKING CODES ===== */
+  .codes-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+    gap:14px;
+    margin-top:16px;
+  }
+  @media (max-width:600px){
+    .codes-grid{grid-template-columns:1fr;}
+  }
+  .code-card{
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+  }
+  .code-card-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .code-name{
+    font-family:'Anton', sans-serif;
+    font-size:20px;
+    letter-spacing:0.02em;
+    color:var(--cyan);
+    word-break:break-word;
+  }
+  .active-badge{
+    flex:0 0 auto;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--good);
+    background:rgba(63,219,140,0.12);
+    border:1px solid var(--good);
+    padding:3px 9px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .code-rewards{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    margin-bottom:14px;
+  }
+  .code-reward-item{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    color:var(--text);
+  }
+  .copy-code-btn{
+    margin-top:auto;
+  }
+  .copy-code-btn.copied{
+    background:var(--good);
+    border-color:var(--good);
+    color:#052226;
+  }

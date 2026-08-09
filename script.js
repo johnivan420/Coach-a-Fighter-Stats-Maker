@@ -13,6 +13,39 @@ const TRAINING_GAINS = {
 };
 /* ============================================ */
 
+/* ================= ACTIVE WORKING CODES =================
+   To add/update a code later, just add/edit an entry below.
+================================================================= */
+const activeCodes = [
+  {
+    code: "Update2!",
+    rewards: [
+      "💰 25,000 Cash",
+      "🎲 10 Real Rerolls",
+      "⭐ 5 Legend Rerolls",
+      "🎟️ 1 Skip Token"
+    ]
+  },
+  {
+    code: "1MVISITS!",
+    rewards: [
+      "💰 100,000 Cash",
+      "🎲 10 Real Rerolls",
+      "⭐ 15 Legend Rerolls",
+      "🎟️ 1 Skip Token"
+    ]
+  },
+  {
+    code: "2MVISITS!",
+    rewards: [
+      "💰 100,000 Cash",
+      "🎲 20 Real Rerolls",
+      "⭐ 25 Legend Rerolls",
+      "🎟️ 2 Skip Tokens"
+    ]
+  }
+];
+
 const STATS = [
   {key:'dexterity', name:'Dexterity', abbr:'DEX',  color:'#22E7F0'},
   {key:'agility',   name:'Agility',   abbr:'AGL',  color:'#5CF2C0'},
@@ -646,9 +679,60 @@ if (el('fighterSearchInput')) el('fighterSearchInput').addEventListener('input',
   buildFighterList(e.target.value);
 });
 
+/* ---------- active working codes ---------- */
+function buildCodesGrid(){
+  const wrap = el('codesGrid');
+  if (!wrap){ console.error('[Fighter Calc] Missing element with id="codesGrid" in index.html'); return; }
+  wrap.innerHTML = '';
+  activeCodes.forEach((c, idx) => {
+    const card = document.createElement('div');
+    card.className = 'code-card';
+    const rewardsHtml = c.rewards.map(r => `<div class="code-reward-item">${r}</div>`).join('');
+    card.innerHTML = `
+      <div class="code-card-head">
+        <div class="code-name">${c.code}</div>
+        <div class="active-badge">🟢 ACTIVE</div>
+      </div>
+      <div class="code-rewards">${rewardsHtml}</div>
+      <button type="button" class="btn copy-code-btn" id="copy-code-${idx}">Copy Code</button>
+    `;
+    wrap.appendChild(card);
+
+    card.querySelector(`#copy-code-${idx}`).addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText){
+          await navigator.clipboard.writeText(c.code);
+        } else {
+          const tmp = document.createElement('textarea');
+          tmp.value = c.code;
+          tmp.style.position = 'fixed';
+          tmp.style.opacity = '0';
+          document.body.appendChild(tmp);
+          tmp.select();
+          document.execCommand('copy');
+          document.body.removeChild(tmp);
+        }
+        const original = btn.textContent;
+        btn.textContent = '✓ Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch (err){
+        console.error('[Fighter Calc] Clipboard copy failed:', err);
+        btn.textContent = 'Copy failed';
+        setTimeout(() => { btn.textContent = 'Copy Code'; }, 2000);
+      }
+    });
+  });
+}
+
 /* ---------- init (each step guarded so one failure can't block the rest) ---------- */
 try { buildStatInputRows(); } catch (e) { console.error('[Fighter Calc] buildStatInputRows failed:', e); }
 try { populateBuildSelectors(); } catch (e) { console.error('[Fighter Calc] populateBuildSelectors failed:', e); }
 try { buildSplitRows(); } catch (e) { console.error('[Fighter Calc] buildSplitRows failed:', e); }
 try { updateHero(); } catch (e) { console.error('[Fighter Calc] updateHero failed:', e); }
 try { buildFighterList(); } catch (e) { console.error('[Fighter Calc] buildFighterList failed:', e); }
+try { buildCodesGrid(); } catch (e) { console.error('[Fighter Calc] buildCodesGrid failed:', e); }

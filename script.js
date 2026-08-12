@@ -43,6 +43,15 @@ const activeCodes = [
       "⭐ 25 Legend Rerolls",
       "🎟️ 2 Skip Tokens"
     ]
+  },
+  {
+    code: "Refresh2!",
+    rewards: [
+      "💰 25,000 Cash",
+      "🎲 10 Real Rerolls",
+      "⭐ 10 Legend Rerolls",
+      "🎟️ 2 Skip Tokens"
+    ]
   }
 ];
 

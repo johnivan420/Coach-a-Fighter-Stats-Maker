@@ -710,7 +710,7 @@ function buildFighterList(filter){
     const row = document.createElement('div');
     row.className = 'fighter-row' + (f.name === selectedFighterName ? ' selected' : '');
     row.innerHTML = `
-      <div class="fr-name">${f.name}${f.classification ? `<span class="${classBadgeClass(f.classification)}">${f.classification}</span>` : ''}</div>
+      <div class="fr-name">${f.classification ? `<span class="${classBadgeClass(f.classification)}">${f.classification}</span>` : ''}<span class="fr-name-text">${f.name}</span></div>
       <div class="fr-total">${f.total === null ? '—' : f.total.toLocaleString()}</div>
     `;
     row.addEventListener('click', () => {
@@ -726,8 +726,8 @@ function renderSelectedFighterCard(f){
   const card = el('fighterSelectedCard');
   if (!card) return;
   card.innerHTML = `
-    <div class="fsc-name">${f.name}</div>
     ${f.classification ? `<div class="${classBadgeClass(f.classification)} fsc-class-badge">${f.classification}</div>` : ''}
+    <div class="fsc-name">${f.name}</div>
     <div class="fsc-total">${f.total === null ? '—' : f.total.toLocaleString()}</div>
     <div class="fsc-label">Total Base Stats</div>
   `;
@@ -1337,7 +1337,7 @@ function renderSimFinalDisplay(){
 
   const fighterMeta = lastSimFighterName ? FIGHTERS.find(f => f.name === lastSimFighterName) : null;
   const classHtml = fighterMeta && fighterMeta.classification
-    ? `<div class="sim-final-fighter-name">${fighterMeta.name} <span class="${classBadgeClass(fighterMeta.classification)}">${fighterMeta.classification}</span></div>`
+    ? `<div class="sim-final-fighter-name"><span class="${classBadgeClass(fighterMeta.classification)}">${fighterMeta.classification}</span> ${fighterMeta.name}</div>`
     : '';
 
   wrap.innerHTML = `

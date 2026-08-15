@@ -181,6 +181,97 @@
       </div>
     </div>
   </div>
+
+  <!-- VIRTUAL TRAINING SIMULATOR (compact live build editor) -->
+  <div class="panel sim-panel sim-compact">
+    <h2><span class="bar"></span>🏋️ Virtual Training</h2>
+    <div class="panel-note" style="margin-top:0;">Live build editor — train stat-by-stat and watch OVR, goals, and the final build update instantly. Nothing here touches your saved Current Stats unless you press Apply Training.</div>
+
+    <!-- LIVE OVR BAR -->
+    <div class="sim-ovr-bar">
+      <div class="sim-ovr-block">
+        <div class="sob-label">Current OVR</div>
+        <input type="number" id="simCurrentOvrInput" min="0" max="200" value="80" class="sob-input">
+      </div>
+      <div class="sim-ovr-block">
+        <div class="sob-label">Max OVR</div>
+        <input type="number" id="simMaxOvrInput" min="1" max="200" value="120" class="sob-input">
+      </div>
+      <div class="sim-ovr-block">
+        <div class="sob-label">Remaining Potential</div>
+        <div class="sob-static" id="simRemainingPotential">0</div>
+      </div>
+    </div>
+    <div class="sim-max-banner" id="simMaxBanner"></div>
+
+    <div class="sim-toolbar">
+      <button type="button" class="btn ghost sim-tool-btn" id="simSyncBtn">Sync From Current Stats</button>
+      <button type="button" class="btn ghost sim-tool-btn" id="simUndoBtn">Undo Last</button>
+      <button type="button" class="btn ghost sim-tool-btn" id="simResetBtn">Reset Simulation</button>
+      <button type="button" class="btn secondary sim-tool-btn" id="simApplyTrainingBtn">Apply Training</button>
+    </div>
+
+    <!-- FIGHTER STATS: compact rows with direct training controls -->
+    <div class="panel-subhead">Fighter Stats</div>
+    <div class="sim-stat-rows" id="simStatRows"></div>
+
+    <div class="panel-subhead">Bulk Training (optional)</div>
+    <div class="sim-live-row">
+      <button type="button" class="btn sim-train-btn sim-train-btn-sm" id="simTrain1">×1</button>
+      <button type="button" class="btn sim-train-btn sim-train-btn-sm" id="simTrain5">×5</button>
+      <button type="button" class="btn sim-train-btn sim-train-btn-sm" id="simTrain10">×10</button>
+      <button type="button" class="btn sim-train-btn sim-train-btn-sm" id="simTrain50">×50</button>
+      <button type="button" class="btn sim-train-btn sim-train-btn-sm" id="simTrain100">×100</button>
+      <span class="sim-live-note">split by allocation % below</span>
+    </div>
+    <div id="simSplitRows" class="sim-split-compact"></div>
+    <div class="split-total-row">
+      <span>Total Allocation</span>
+      <span class="v" id="simSplitTotalDisplay">0%</span>
+    </div>
+
+    <div class="panel-subhead">Training History</div>
+    <div class="sim-history-wrap" id="simHistoryList"><div class="placeholder-note">No training performed yet.</div></div>
+
+    <!-- DESIRED RESULT -->
+    <div class="panel-subhead">Desired Result</div>
+    <div class="sim-goal-grid sim-goal-grid-compact">
+      <div class="field-mini">
+        <span class="fl">Desired OVR</span>
+        <input type="number" id="simGoalOvr" min="1" max="200" placeholder="e.g. 110">
+      </div>
+      <div class="field-mini">
+        <span class="fl">Dexterity</span>
+        <input type="number" id="simGoalDexterity" min="0" max="3000" placeholder="—">
+      </div>
+      <div class="field-mini">
+        <span class="fl">Agility</span>
+        <input type="number" id="simGoalAgility" min="0" max="3000" placeholder="—">
+      </div>
+      <div class="field-mini">
+        <span class="fl">Stamina</span>
+        <input type="number" id="simGoalStamina" min="0" max="3000" placeholder="—">
+      </div>
+      <div class="field-mini">
+        <span class="fl">Power</span>
+        <input type="number" id="simGoalPower" min="0" max="3000" placeholder="—">
+      </div>
+      <div class="field-mini">
+        <span class="fl">Endurance</span>
+        <input type="number" id="simGoalEndurance" min="0" max="3000" placeholder="—">
+      </div>
+    </div>
+    <div id="simGoalProgress" class="sim-goal-progress-compact"></div>
+
+    <div class="panel-subhead" style="border-top:none; padding-top:0;">Recommended Training</div>
+    <div id="simRecommendedPreview" class="sim-rec-preview"></div>
+    <button type="button" class="btn secondary" id="simOptimizeBtn">Optimize Training</button>
+    <div class="error-msg" id="simGoalError"></div>
+
+    <!-- FINAL BUILD -->
+    <div class="panel-subhead">🏆 Final Trained Build</div>
+    <div id="simFinalDisplay"></div>
+  </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="script.js"></script>

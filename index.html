@@ -7,13 +7,12 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-DERFPXNHY9');
 </script>
 <meta charset="UTF-8">
-<title>Coach-a-Fighter Stats Maker | Fighter Training Calculator</title>
+<title>Coach a Fighter Stats Maker — OVR Calculator &amp; Build Planner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Coach-a-Fighter Stats Maker — calculate fighter stats, training gains, maximum OVR, and optimal training allocations.">
+<meta name="description" content="Coach a Fighter Stats Maker: calculate OVR, allocate stat points, plan target builds, compare builds, browse fighters, and find working codes for Coach a Fighter on Roblox.">
 <link rel="canonical" href="https://johnivan420.github.io/Coach-a-Fighter-Stats-Maker/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,166 +20,186 @@
 </head>
 <body>
 <div class="wrap">
+
   <div class="masthead">
     <div class="eyebrow">Coach a Fighter</div>
-    <h1>Max Training Potential</h1>
-    <div class="sub">Set your stats, allocate training %, and predict your final build</div>
+    <h1>Build Your Fighter</h1>
+    <div class="sub">The complete Coach a Fighter stats calculator, OVR planner, and build companion for Roblox players.</div>
   </div>
 
-  <!-- ACTIVE WORKING CODES -->
-  <div class="panel codes-panel">
-    <h2><span class="bar"></span>🎁 Active Working Codes</h2>
-    <div class="panel-note" style="margin-top:0;">Currently working codes for Coach-a-Fighter!</div>
-    <div class="codes-grid" id="codesGrid"></div>
+  <div class="panel shared-banner" id="sharedBanner" style="display:none;">
+    <div class="shared-banner-text">🔗 <b>Shared build detected.</b> Someone sent you a fighter build.</div>
+    <button class="btn" id="loadSharedBtn" style="width:auto; margin-top:0;">Load Shared Build</button>
   </div>
 
-  <!-- HERO: OVR progress -->
-  <div class="hero-panel">
-    <div class="ovr-inputs-row">
-      <div class="ovr-input-block">
-        <label>Current OVR</label>
-        <input type="number" id="currentOvrInput" min="1" max="200" value="80">
-      </div>
-      <div class="arrow-sep">→</div>
-      <div class="ovr-input-block">
-        <label>Max OVR</label>
-        <input type="number" id="maxOvrInput" min="1" max="200" value="120">
+  <div class="tab-nav" id="tabNav">
+    <button class="tab-btn active" data-tab="build">🧮 Build</button>
+    <button class="tab-btn" data-tab="compare">⚔️ Compare</button>
+    <button class="tab-btn" data-tab="fighters">🥊 Fighters</button>
+    <button class="tab-btn" data-tab="mybuilds">💾 My Builds</button>
+    <button class="tab-btn" data-tab="codes">🎁 Codes</button>
+    <button class="tab-btn" data-tab="guides">📖 Guides</button>
+  </div>
+
+  <!-- ================= BUILD / ALLOCATE TAB ================= -->
+  <div class="tab-panel active" id="tab-build">
+
+    <div class="hero-panel">
+      <div class="panel-subhead" style="margin-top:0; padding-top:0; border-top:none;">Build Settings</div>
+      <div class="ovr-inputs-row">
+        <div class="ovr-input-block">
+          <label>Current OVR</label>
+          <input type="number" id="currentOvrInput" min="1" max="120" value="80">
+        </div>
+        <div class="arrow-sep">→</div>
+        <div class="ovr-input-block">
+          <label>Max OVR</label>
+          <input type="number" id="maxOvrInput" min="1" max="120" value="100">
+        </div>
       </div>
     </div>
-    <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%;"></div></div>
-    <div class="xp-labels"><span id="xpLeftLabel">OVR 80</span><span id="xpRightLabel">OVR 120</span></div>
-    <div class="hero-stats-row">
-      <div class="hero-stat"><div class="val accent" id="ovrIncreaseVal">0</div><div class="lbl">OVR Increase Needed</div></div>
-      <div class="hero-stat"><div class="val" id="trainingsNeededVal">0</div><div class="lbl">Trainings Required</div></div>
-      <div class="hero-stat"><div class="val" id="blocksNeededVal">0</div><div class="lbl">Training Blocks (×10)</div></div>
-    </div>
-  </div>
 
-  <div class="grid">
-    <!-- LEFT: current stats + scanner + allocation + predict, then compare -->
-    <div>
-      <div class="panel">
-        <h2><span class="bar"></span>Current Stats</h2>
-        <div id="statInputRows"></div>
+    <div class="grid">
+      <div>
+        <div class="panel">
+          <h2><span class="bar"></span>Current Stats (Baseline)</h2>
+          <div class="panel-note" style="margin-top:0;">Enter your fighter's current stats, load a fighter, or scan a screenshot below. Editing these resets your point allocation (not your Current/Max OVR).</div>
+          <div id="baselineRows"></div>
 
-        <button type="button" class="btn ghost scan-toggle-btn" id="scanToggleBtn">📷 Scan Fighter Stats</button>
-
-        <div class="scan-panel" id="scanPanel">
-          <div class="scan-upload-row">
-            <label class="btn ghost file-label" for="scanFileInput">Choose Image</label>
-            <input type="file" id="scanFileInput" accept="image/*" hidden>
-            <span class="scan-filename" id="scanFileName">No image selected</span>
+          <button type="button" class="btn ghost scan-toggle-btn" id="scanToggleBtn">📷 Scan Fighter Stats</button>
+          <div class="scan-panel" id="scanPanel">
+            <div class="scan-steps">Step 1: upload → Step 2: scan → Step 3: review → Step 4: apply</div>
+            <div class="scan-upload-row">
+              <label class="btn ghost file-label" for="scanFileInput">Choose Image</label>
+              <input type="file" id="scanFileInput" accept="image/*" hidden>
+              <span class="scan-filename" id="scanFileName">No image selected</span>
+            </div>
+            <div class="scan-preview-wrap" id="scanPreviewWrap"></div>
+            <button type="button" class="btn" id="scanStatsBtn" disabled>Scan Stats</button>
+            <div class="scan-status" id="scanStatus"></div>
+            <div id="scanDetected"></div>
           </div>
-          <div class="scan-preview-wrap" id="scanPreviewWrap"></div>
-          <button type="button" class="btn" id="scanStatsBtn" disabled>Scan Stats</button>
-          <div class="scan-status" id="scanStatus"></div>
-          <div id="scanDetected"></div>
         </div>
 
-        <div class="panel-subhead">Training Allocation (%)</div>
-        <div id="splitRows"></div>
-        <div class="split-total-row">
-          <span>Total Allocation</span>
-          <span class="v" id="splitTotalDisplay">0%</span>
+        <div class="panel">
+          <h2><span class="bar"></span>Save This Build</h2>
+          <div class="save-row">
+            <div class="save-input-block">
+              <label>Build Name</label>
+              <input type="text" id="buildNameInput" placeholder="e.g. Power Focus Build">
+            </div>
+            <button class="btn save-btn" id="saveBuildBtn">Save</button>
+          </div>
+          <div class="error-msg" id="saveError"></div>
+          <button type="button" class="btn ghost" id="shareBuildBtn">🔗 Share Build</button>
+          <div class="error-msg" id="shareStatus"></div>
         </div>
+      </div>
 
-        <div class="predict-row">
+      <div>
+        <div class="panel">
+          <h2><span class="bar"></span>Training Allocation &amp; Prediction</h2>
+          <div class="panel-note" style="margin-top:0;">A preview tool — shows what your Current Stats above would look like after training with this % split. Doesn't touch your point allocation below.</div>
+          <div id="splitRows"></div>
+          <div class="split-total-row">
+            <span>Total Allocation</span>
+            <span class="v" id="splitTotalDisplay">0%</span>
+          </div>
+          <div class="split-incomplete-note" id="splitIncompleteNote"></div>
           <button class="btn predict-btn" id="predictBtn">Predict Final Stats</button>
+          <div class="error-msg" id="predictError"></div>
           <div class="predict-results" id="resultsWrap">
-            <div class="placeholder-note">Set your stats and percentages, then hit Predict Final Stats.</div>
-          </div>
-        </div>
-        <div class="error-msg" id="predictError"></div>
-      </div>
-
-      <div class="panel">
-        <h2><span class="bar"></span>Compare Builds</h2>
-        <div class="compare-select-row">
-          <div class="compare-select-block">
-            <label>Build A</label>
-            <select id="buildASelect"></select>
-          </div>
-          <div class="vs-tag">VS</div>
-          <div class="compare-select-block">
-            <label>Build B</label>
-            <select id="buildBSelect"></select>
-          </div>
-        </div>
-        <button class="btn" id="compareBtn">Compare Builds</button>
-        <div class="error-msg" id="compareError"></div>
-        <div id="compareResults"></div>
-      </div>
-    </div>
-
-    <!-- RIGHT: save + history -->
-    <div>
-      <div class="panel">
-        <h2><span class="bar"></span>Save Build</h2>
-        <div class="save-row">
-          <div class="save-input-block">
-            <label>Build Name</label>
-            <input type="text" id="buildNameInput" placeholder="e.g. Power Focus Build">
-          </div>
-          <button class="btn save-btn" id="saveBuildBtn">Save</button>
-        </div>
-        <div class="error-msg" id="saveError"></div>
-        <div class="panel-note">Saves your current OVR range, stats, and last comparison. Kept for this session — export or screenshot if you want to keep it longer.</div>
-      </div>
-
-      <div class="panel">
-        <h2><span class="bar"></span>Build History</h2>
-        <div id="historyList"><div class="placeholder-note">No builds saved yet.</div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="grid">
-    <!-- Fighter Base Stats reference -->
-    <div>
-      <div class="panel">
-        <h2><span class="bar"></span>📊 Fighter Base Stats</h2>
-        <div class="panel-note" style="margin-top:0;">Compare the total base stats of different fighters. Total Base Stats = Dexterity + Agility + Stamina + Power + Endurance — this is different from OVR.</div>
-
-        <div class="fighter-search-row">
-          <input type="text" id="fighterSearchInput" placeholder="🔍 Search fighter…">
-        </div>
-
-        <div class="fighter-selected-card" id="fighterSelectedCard"></div>
-
-        <div id="fighterListWrap" class="fighter-list-wrap"></div>
-      </div>
-    </div>
-
-    <!-- Understanding the Stats -->
-    <div>
-      <div class="panel">
-        <h2><span class="bar"></span>📖 Understanding the Stats</h2>
-        <div class="panel-note" style="margin-top:0;">What each stat means for your fighter.</div>
-        <div class="stat-explainer-list">
-          <div class="stat-explainer-row">
-            <div class="se-name"><span class="dot" style="background:#22E7F0"></span>Dexterity</div>
-            <div class="se-desc">Represents the fighter's precision, technique, and ability to execute attacks accurately and efficiently.</div>
-          </div>
-          <div class="stat-explainer-row">
-            <div class="se-name"><span class="dot" style="background:#5CF2C0"></span>Agility</div>
-            <div class="se-desc">Represents the fighter's movement, speed, reflexes, and ability to evade or reposition quickly.</div>
-          </div>
-          <div class="stat-explainer-row">
-            <div class="se-name"><span class="dot" style="background:#3FDB8C"></span>Stamina</div>
-            <div class="se-desc">Represents how well the fighter can maintain their performance over time and continue fighting without getting tired quickly.</div>
-          </div>
-          <div class="stat-explainer-row">
-            <div class="se-name"><span class="dot" style="background:#FF7A3D"></span>Power</div>
-            <div class="se-desc">Represents the strength and impact of the fighter's attacks, especially the force behind their punches.</div>
-          </div>
-          <div class="stat-explainer-row">
-            <div class="se-name"><span class="dot" style="background:#B98AF0"></span>Endurance</div>
-            <div class="se-desc">Represents how well the fighter can withstand damage, pressure, and powerful attacks without losing effectiveness.</div>
+            <div class="placeholder-note">Set your Current Stats and allocation %, then hit Predict Final Stats.</div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- ================= COMPARE TAB ================= -->
+  <div class="tab-panel" id="tab-compare">
+    <div class="panel">
+      <h2><span class="bar"></span>⚔️ Compare Builds</h2>
+      <div class="panel-note" style="margin-top:0;">Compares two of your saved builds.</div>
+      <div class="compare-select-row">
+        <div class="compare-select-block">
+          <label>Build A</label>
+          <select id="buildASelect"></select>
+        </div>
+        <div class="vs-tag">VS</div>
+        <div class="compare-select-block">
+          <label>Build B</label>
+          <select id="buildBSelect"></select>
+        </div>
+      </div>
+      <button class="btn" id="compareBtn">Compare Builds</button>
+      <div class="error-msg" id="compareError"></div>
+      <div id="compareResults"></div>
+    </div>
+  </div>
+
+  <!-- ================= FIGHTERS TAB ================= -->
+  <div class="tab-panel" id="tab-fighters">
+    <div class="panel">
+      <h2><span class="bar"></span>🥊 Fighters</h2>
+      <div class="panel-note" style="margin-top:0;">Browse the fighter roster. Tap a fighter to load their stats into the Build Planner.</div>
+      <div class="fighter-search-row">
+        <input type="text" id="fighterSearchInput" placeholder="🔍 Search fighter…">
+      </div>
+      <div id="fighterCardsWrap" class="fighter-cards-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ================= MY BUILDS TAB ================= -->
+  <div class="tab-panel" id="tab-mybuilds">
+    <div class="panel">
+      <h2><span class="bar"></span>💾 My Builds</h2>
+      <div class="panel-note" style="margin-top:0;">Saved to this browser (localStorage) — no account needed.</div>
+      <div id="historyList"><div class="placeholder-note">No builds saved yet.</div></div>
+    </div>
+  </div>
+
+  <!-- ================= CODES TAB ================= -->
+  <div class="tab-panel" id="tab-codes">
+    <div class="panel codes-panel">
+      <h2><span class="bar"></span>🎁 Active Working Codes</h2>
+      <div class="panel-note" style="margin-top:0;">Currently working codes for Coach-a-Fighter!</div>
+      <div class="codes-grid" id="codesGrid"></div>
+    </div>
+  </div>
+
+  <!-- ================= GUIDES TAB ================= -->
+  <div class="tab-panel" id="tab-guides">
+    <div class="panel">
+      <h2><span class="bar"></span>📖 Understanding the Stats</h2>
+      <div class="panel-note" style="margin-top:0;">What each stat means for your fighter, and how OVR is calculated in Coach a Fighter.</div>
+      <div class="stat-explainer-list">
+        <div class="stat-explainer-row">
+          <div class="se-name"><span class="dot" style="background:#22E7F0"></span>Dexterity</div>
+          <div class="se-desc">Represents the fighter's precision, technique, and ability to execute attacks accurately and efficiently.</div>
+        </div>
+        <div class="stat-explainer-row">
+          <div class="se-name"><span class="dot" style="background:#5CF2C0"></span>Agility</div>
+          <div class="se-desc">Represents the fighter's movement, speed, reflexes, and ability to evade or reposition quickly.</div>
+        </div>
+        <div class="stat-explainer-row">
+          <div class="se-name"><span class="dot" style="background:#3FDB8C"></span>Stamina</div>
+          <div class="se-desc">Represents how well the fighter can maintain their performance over time and continue fighting without getting tired quickly.</div>
+        </div>
+        <div class="stat-explainer-row">
+          <div class="se-name"><span class="dot" style="background:#FF7A3D"></span>Power</div>
+          <div class="se-desc">Represents the strength and impact of the fighter's attacks, especially the force behind their punches.</div>
+        </div>
+        <div class="stat-explainer-row">
+          <div class="se-name"><span class="dot" style="background:#B98AF0"></span>Endurance</div>
+          <div class="se-desc">Represents how well the fighter can withstand damage, pressure, and powerful attacks without losing effectiveness.</div>
+        </div>
+      </div>
+      <div class="panel-subhead">How OVR Works</div>
+      <div class="panel-note" style="margin-top:0;">Current OVR and Max OVR are values you set yourself (matching what the game shows you). The game's stat-to-OVR formula is 80 base OVR + 1 OVR per 10 total stat points, capped at 120.</div>
+    </div>
+  </div>
+
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="script.js"></script>

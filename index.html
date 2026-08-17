@@ -82,34 +82,6 @@
         </div>
 
         <div class="panel">
-          <h2><span class="bar"></span>Training Allocation &amp; Prediction</h2>
-          <div class="panel-note" style="margin-top:0;">A preview tool — shows what your Current Stats above would look like after training with this % split. Doesn't touch your point allocation below.</div>
-          <div id="splitRows"></div>
-          <div class="split-total-row">
-            <span>Total Allocation</span>
-            <span class="v" id="splitTotalDisplay">0%</span>
-          </div>
-          <div class="split-incomplete-note" id="splitIncompleteNote"></div>
-          <button class="btn predict-btn" id="predictBtn">Predict Final Stats</button>
-          <div class="error-msg" id="predictError"></div>
-          <div class="predict-results" id="resultsWrap">
-            <div class="placeholder-note">Set your Current Stats and allocation %, then hit Predict Final Stats.</div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div class="panel">
-          <h2><span class="bar"></span>Fighter Classification</h2>
-          <div id="classificationCard" class="classification-card"><div class="placeholder-note">Classification is based on your Projected OVR above.</div></div>
-        </div>
-
-        <div class="panel">
-          <h2><span class="bar"></span>Final Build</h2>
-          <div id="finalBuildWrap"></div>
-        </div>
-
-        <div class="panel">
           <h2><span class="bar"></span>Save This Build</h2>
           <div class="save-row">
             <div class="save-input-block">
@@ -121,6 +93,24 @@
           <div class="error-msg" id="saveError"></div>
           <button type="button" class="btn ghost" id="shareBuildBtn">🔗 Share Build</button>
           <div class="error-msg" id="shareStatus"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <h2><span class="bar"></span>Training Allocation &amp; Prediction</h2>
+          <div class="panel-note" style="margin-top:0;">A preview tool — shows what your Current Stats would look like after training with this % split. Doesn't touch your point allocation.</div>
+          <div id="splitRows"></div>
+          <div class="split-total-row">
+            <span>Total Allocation</span>
+            <span class="v" id="splitTotalDisplay">0%</span>
+          </div>
+          <div class="split-incomplete-note" id="splitIncompleteNote"></div>
+          <button class="btn predict-btn" id="predictBtn">Predict Final Stats</button>
+          <div class="error-msg" id="predictError"></div>
+          <div class="predict-results" id="resultsWrap">
+            <div class="placeholder-note">Set your Current Stats and allocation %, then hit Predict Final Stats.</div>
+          </div>
         </div>
       </div>
     </div>

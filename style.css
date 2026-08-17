@@ -386,6 +386,7 @@ select:focus{outline:1px solid var(--cyan); border-color:var(--cyan);}
 
 /* ===== SIMPLIFIED FIGHTER CARDS (name / classification / price only) ===== */
 .fighter-card-simple{text-align:center; padding:18px 14px;}
+.fighter-card-simple .fc-rank{display:block; margin-bottom:6px;}
 .fighter-card-simple .fc-name{font-size:16px; margin-bottom:10px;}
 .fighter-card-simple .class-badge{font-size:12px; padding:5px 12px; margin-bottom:10px; display:inline-block;}
 .fighter-card-simple .fc-price{

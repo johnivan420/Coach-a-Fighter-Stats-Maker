@@ -325,34 +325,11 @@ function classificationForOvr(ovr){
   if (ovr >= 90)  return {label:'ELITE', emoji:'🏆'};
   return {label:'PRO', emoji:'🥊'};
 }
-function renderClassification(){
-  const card = el('classificationCard');
-  const ovr = projectedOvr();
-  const cls = classificationForOvr(ovr);
-  card.innerHTML = `<div class="class-badge-lg">${cls.emoji} ${cls.label}</div><div class="class-ovr">Projected OVR ${ovr}</div>`;
-}
-
-function renderFinalBuild(){
-  const wrap = el('finalBuildWrap');
-  const stats = currentStatsObj();
-  let html = `
-    <div class="result-summary">
-      <div class="rs-card"><div class="v">${projectedOvr()} / ${maxOvrManual()}</div><div class="l">OVR</div></div>
-      <div class="rs-card"><div class="v">${pointsUsed()}</div><div class="l">Points Used</div></div>
-      <div class="rs-card"><div class="v">${pointsRemaining()}</div><div class="l">Points Remaining</div></div>
-      <div class="rs-card"><div class="v">${statTotal(stats)}</div><div class="l">Total Stats</div></div>
-    </div>
-  `;
-  STATS.forEach(s => {
-    html += `<div class="final-stat-row"><div class="fname"><span class="dot" style="background:${s.color}"></span>${s.name}</div><div class="fval">${stats[s.key]}</div></div>`;
-  });
-  wrap.innerHTML = html;
-}
-
-/* ================= RECALC (single place everything updates from) ================= */
+/* ================= RECALC (kept as a no-op call point for compatibility with existing call sites) ================= */
 function recalcAll(){
-  renderClassification();
-  renderFinalBuild();
+  // Fighter Classification and Final Build panels were removed from the Build tab.
+  // The underlying data functions (projectedOvr, classificationForOvr, etc.) are
+  // still used elsewhere (Save Build, build history, compare) and are untouched.
 }
 
 if (el('currentOvrInput')) el('currentOvrInput').addEventListener('input', recalcAll);
@@ -565,12 +542,14 @@ function buildFighterCards(filter){
   if (list.length === 0){ wrap.innerHTML = '<div class="placeholder-note">No fighters match your search.</div>'; return; }
 
   wrap.innerHTML = '';
-  list.forEach(f => {
+  list.forEach((f, i) => {
     const card = document.createElement('div');
     card.className = 'fighter-card fighter-card-simple';
     card.innerHTML = `
+      <div class="fc-rank">#${i+1}</div>
       <div class="fc-name">${f.name}</div>
       <div class="${classBadgeClass(f.classification)}">${f.classification === 'GOAT' ? '🐐 GOAT' : '⭐ LEGEND'}</div>
+      <div class="fc-total">Total Base Stats: ${f.total.toLocaleString()}</div>
       <div class="fc-price">${f.price || '—'}</div>
       <button type="button" class="btn ghost load-fighter-btn">Load Into Planner</button>
     `;

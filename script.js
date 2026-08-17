@@ -325,8 +325,34 @@ function classificationForOvr(ovr){
   if (ovr >= 90)  return {label:'ELITE', emoji:'🏆'};
   return {label:'PRO', emoji:'🥊'};
 }
+function renderClassification(){
+  const card = el('classificationCard');
+  const ovr = projectedOvr();
+  const cls = classificationForOvr(ovr);
+  card.innerHTML = `<div class="class-badge-lg">${cls.emoji} ${cls.label}</div><div class="class-ovr">Projected OVR ${ovr}</div>`;
+}
+
+function renderFinalBuild(){
+  const wrap = el('finalBuildWrap');
+  const stats = currentStatsObj();
+  let html = `
+    <div class="result-summary">
+      <div class="rs-card"><div class="v">${projectedOvr()} / ${maxOvrManual()}</div><div class="l">OVR</div></div>
+      <div class="rs-card"><div class="v">${pointsUsed()}</div><div class="l">Points Used</div></div>
+      <div class="rs-card"><div class="v">${pointsRemaining()}</div><div class="l">Points Remaining</div></div>
+      <div class="rs-card"><div class="v">${statTotal(stats)}</div><div class="l">Total Stats</div></div>
+    </div>
+  `;
+  STATS.forEach(s => {
+    html += `<div class="final-stat-row"><div class="fname"><span class="dot" style="background:${s.color}"></span>${s.name}</div><div class="fval">${stats[s.key]}</div></div>`;
+  });
+  wrap.innerHTML = html;
+}
+
 /* ================= RECALC (single place everything updates from) ================= */
 function recalcAll(){
+  renderClassification();
+  renderFinalBuild();
 }
 
 if (el('currentOvrInput')) el('currentOvrInput').addEventListener('input', recalcAll);
@@ -675,6 +701,8 @@ try { initTabs(); } catch(e){ console.error(e); }
 try { checkForSharedBuild(); } catch(e){ console.error(e); }
 try { buildBaselineRows(); } catch(e){ console.error(e); }
 try { buildSplitRows(); } catch(e){ console.error(e); }
+try { buildAllocRows(); } catch(e){ console.error(e); }
+try { buildTargetRows(); } catch(e){ console.error(e); }
 try { renderHistory(); } catch(e){ console.error(e); }
 try { populateBuildSelectors(); } catch(e){ console.error(e); }
 try { buildFighterCards(); } catch(e){ console.error(e); }

@@ -1,18 +1,4 @@
-/* =====================================================================
-   COACH A FIGHTER — STATS MAKER / BUILD PLANNER
 
-   SOURCE OF TRUTH:
-   - Current OVR and Max OVR are set MANUALLY by the user (matching what
-     the game shows them) — the calculator never overwrites these.
-   - Points available = Max OVR - Current OVR. Every 10 stat points
-     allocated to a stat = 1 point = 1 OVR (POINTS_PER_OVR), so allocating
-     points can never silently create a mismatched OVR number.
-   - The separate formula OVR = 80 + floor(totalStats/10), capped at 120,
-     is the game's real stat->OVR formula. It's used for the Target Build
-     feasibility check and for computing OVR from Fighter Database totals
-     (since fighters only have a total, not a manually-tracked OVR) — it
-     does NOT drive the main Current/Max OVR inputs.
-   ===================================================================== */
 
 /* ================= CONFIG (existing game formulas — edit here only) ================= */
 const BASE_OVR = 80;          // fighter starts at 80 OVR with 0 total stat points
